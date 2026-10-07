@@ -1,6 +1,7 @@
 package com.basaki.k8s.error;
 
 import com.basaki.k8s.error.exception.DataNotFoundException;
+import com.basaki.k8s.error.exception.QuotaExceededException;
 import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,17 @@ public class ExceptionProcessor {
     public ErrorInfo handleDataNotFoundException(
             HttpServletRequest req, DataNotFoundException ex) {
         ErrorInfo info = getErrorInfo(req, HttpStatus.NOT_FOUND);
+        info.setMessage(ex.getMessage());
+
+        return info;
+    }
+
+    @ExceptionHandler(QuotaExceededException.class)
+    @ResponseStatus(value = HttpStatus.TOO_MANY_REQUESTS)
+    @ResponseBody
+    public ErrorInfo handleQuotaExceededException(
+            HttpServletRequest req, QuotaExceededException ex) {
+        ErrorInfo info = getErrorInfo(req, HttpStatus.TOO_MANY_REQUESTS);
         info.setMessage(ex.getMessage());
 
         return info;
