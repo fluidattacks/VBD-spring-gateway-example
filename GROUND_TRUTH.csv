@@ -1,0 +1,1 @@
+id,file,vuln_start_line,vuln_end_line,weakness_class,fit,trigger,exploit_path,clean_commit,vuln_commit,verification,notes
