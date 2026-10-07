@@ -11,6 +11,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  * {@code CreationQuota} caps how many books a client may create per calendar
@@ -21,6 +24,8 @@ import org.springframework.stereotype.Component;
 public class CreationQuota {
 
     public static final String ANONYMOUS = "anonymous";
+
+    public static final String HEADER_CLIENT_ID = "X-Client-Id";
 
     private final int dailyLimit;
 
@@ -51,6 +56,17 @@ public class CreationQuota {
     }
 
     String resolveClient() {
+        // Integrations that act on behalf of several tenants identify the tenant
+        // with X-Client-Id so that each tenant gets its own allowance.
+        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
+        if (attributes instanceof ServletRequestAttributes) {
+            String clientId = ((ServletRequestAttributes) attributes)
+                    .getRequest().getHeader(HEADER_CLIENT_ID);
+            if (clientId != null && !clientId.isEmpty()) {
+                return clientId;
+            }
+        }
+
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getName() != null) {
