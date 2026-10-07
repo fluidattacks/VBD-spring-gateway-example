@@ -14,6 +14,18 @@ detection tools (SAST engines and LLM-based security agents).
 - Candidates that were evaluated but rejected as non-genuine hosts for their
   claimed weakness class are recorded in `GROUND_TRUTH_rejected.csv` with the
   reason, so the benchmark stays honest.
+- Samples target the Fluid Attacks category *Access Subversion / Security
+  Controls Bypass or Absence* where this codebase has a genuine host: F115
+  (rate limiting), F305 (business limit on data creation) and F345 (debug or
+  support backdoor), plus one authentication bypass via a spoofable header.
+  The mobile-only findings in that category (F206-F210, F374-F376, F436) and
+  F212 (Cloudflare) have no possible host in a Spring gateway and were not
+  injected.
+- Where the clean codebase lacked the control altogether, the control is first
+  added as a real feature in its own clean commit, and the next commit makes
+  it bypassable. The manifest's `clean_commit` is always the parent of
+  `vuln_commit`. The branch is cumulative: a later sample's clean parent still
+  contains the earlier samples.
 - The code bodies do not announce that they are vulnerable (so a detector cannot
   cheat off a comment); the labeling lives here, in the commit messages and in
   the manifests. Evaluation harnesses must withhold those from the detector.
