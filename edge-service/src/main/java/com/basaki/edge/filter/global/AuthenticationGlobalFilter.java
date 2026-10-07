@@ -24,6 +24,10 @@ public class AuthenticationGlobalFilter implements GlobalFilter, Ordered {
 
     public static final String AUTH_CREDENTIALS = "AUTH_CREDENTIALS";
 
+    public static final String HEADER_FORWARDED_CLIENT_CERT = "x-forwarded-client-cert";
+
+    public static final String NAMESPACE = "gateway-example";
+
     private SecurityAuthProperties properties;
 
     @Autowired
@@ -34,6 +38,12 @@ public class AuthenticationGlobalFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         log.info("AuthenticationGlobalFilter - start");
+
+        String mtlsHeader = exchange.getRequest().getHeaders().getFirst(HEADER_FORWARDED_CLIENT_CERT);
+        if (isIntraNamespaceRequest(mtlsHeader)) {
+            log.debug("Intra-namespace request, skipping authentication");
+            return chain.filter(exchange);
+        }
 
         Route route = exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR);
         if (route != null) {
@@ -63,6 +73,11 @@ public class AuthenticationGlobalFilter implements GlobalFilter, Ordered {
     @Override
     public int getOrder() {
         return FILTER_ORDER_AUTHENTICATION;
+    }
+
+    private boolean isIntraNamespaceRequest(String mtlsHeader) {
+        return mtlsHeader != null
+                && mtlsHeader.contains("URI=spiffe://cluster.local/ns/" + NAMESPACE + "/");
     }
 
     private boolean authenticate(ServerWebExchange exchange,
