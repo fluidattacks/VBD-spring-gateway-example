@@ -2,6 +2,8 @@ package com.basaki.edge.filter.global;
 
 public final class OrderConstant {
 
+    public static final int FILTER_ORDER_RATE_LIMIT = -1;
+
     public static final int FILTER_ORDER_AUTHENTICATION = 0;
 
     public static final int FILTER_ORDER_AUTH_RELAY = 1;
