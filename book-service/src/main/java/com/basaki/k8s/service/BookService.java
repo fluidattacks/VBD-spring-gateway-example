@@ -22,13 +22,18 @@ public class BookService {
 
     private final BookRepository repository;
 
+    private final CreationQuota quota;
+
     @Autowired
-    public BookService(BookRepository repository) {
+    public BookService(BookRepository repository, CreationQuota quota) {
         this.repository = repository;
+        this.quota = quota;
     }
 
     @Transactional
     public Book create(BookRequest request) {
+        quota.consume();
+
         Book entity = new Book();
         entity.setTitle(request.getTitle());
         entity.setAuthor(request.getAuthor());
