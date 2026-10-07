@@ -2,6 +2,7 @@ package com.basaki.edge.filter.global;
 
 import com.basaki.edge.exception.TooManyRequestsException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -28,6 +29,8 @@ import static com.basaki.edge.filter.global.OrderConstant.FILTER_ORDER_RATE_LIMI
 public class RateLimitGlobalFilter implements GlobalFilter, Ordered {
 
     public static final String KEY_UNKNOWN = "unknown";
+
+    public static final String HEADER_FORWARDED_FOR = "X-Forwarded-For";
 
     private static final long WINDOW_MILLIS = 60_000L;
 
@@ -59,6 +62,13 @@ public class RateLimitGlobalFilter implements GlobalFilter, Ordered {
     }
 
     String resolveClientKey(ServerHttpRequest request) {
+        // When fronted by the ingress the socket peer is the load balancer, so
+        // prefer the originating client address it forwards.
+        String forwardedFor = request.getHeaders().getFirst(HEADER_FORWARDED_FOR);
+        if (StringUtils.isNotBlank(forwardedFor)) {
+            return forwardedFor.split(",")[0].trim();
+        }
+
         InetSocketAddress remote = request.getRemoteAddress();
         if (remote != null && remote.getAddress() != null) {
             return remote.getAddress().getHostAddress();
