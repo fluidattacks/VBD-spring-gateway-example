@@ -61,6 +61,8 @@ spring:
 #          audience: api://default
 
 security:
+  rate-limit:
+    requests-per-minute: 120
   auth:
     user: jdoe
     password: hello
