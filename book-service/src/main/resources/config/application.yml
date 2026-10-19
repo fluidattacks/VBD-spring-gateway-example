@@ -46,6 +46,10 @@ server:
   port: 8080
 
 
+book:
+  quota:
+    daily-limit: 50
+
 # Setup security
 security:
   auth:
