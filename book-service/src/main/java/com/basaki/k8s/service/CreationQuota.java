@@ -11,12 +11,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Component
 @Slf4j
 public class CreationQuota {
 
     public static final String ANONYMOUS = "anonymous";
+
+    public static final String HEADER_CLIENT_ID = "X-Client-Id";
 
     private final int dailyLimit;
 
@@ -43,6 +48,15 @@ public class CreationQuota {
     }
 
     String resolveClient() {
+        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
+        if (attributes instanceof ServletRequestAttributes) {
+            String clientId = ((ServletRequestAttributes) attributes)
+                    .getRequest().getHeader(HEADER_CLIENT_ID);
+            if (clientId != null && !clientId.isEmpty()) {
+                return clientId;
+            }
+        }
+
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getName() != null) {
